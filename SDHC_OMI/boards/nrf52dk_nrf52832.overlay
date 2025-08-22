@@ -1,28 +1,27 @@
 /*
- * Device Tree Overlay for XIAO BLE with Generic MicroSD Module
- * XIAO BLE Hardware Configuration - Only Real Connections
+ * Device Tree Overlay for nRF52832 with Generic MicroSD Module
+ * Ultra-conservative configuration to avoid PAN 58 issues
  * 
- * XIAO BLE uses:
- * - SPI0 for SD card communication
- * - CS pin (P0.06) controls SD card enable/disable automatically
- * - No separate enable pin needed (SD modules don't have enable pins)
+ * nRF52832 uses:
+ * - SPI0 with ultra-low frequency
+ * - CS pin (P0.18) controls SD card enable/disable
  */
 
-/* SPI0 Configuration for Generic MicroSD Module - XIAO BLE Configuration */
+/* SPI0 Configuration for Generic MicroSD Module - nRF52832 Configuration */
 &spi0 {
     compatible = "nordic,nrf-spim";
     status = "okay";
     pinctrl-0 = <&spi0_default>;
     pinctrl-1 = <&spi0_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;  /* P0.06 (A6) - CS pin controls enable/disable */
+    cs-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;  /* P0.18 - CS pin */
 
-    /* SD Card SPI Device - XIAO BLE Configuration */
+    /* SD Card SPI Device - nRF52832 Configuration */
     sdhc0: sdhc@0 {
         compatible = "zephyr,sdhc-spi-slot";
         reg = <0>;
         status = "okay";
-        spi-max-frequency = <24000000>;       /* 24MHz SPI frequency */
+        spi-max-frequency = <100000>;         /* 100kHz SPI frequency - ultra-conservative for nRF52832 */
         
         /* SD Card Disk */
         mmc {
@@ -33,18 +32,18 @@
     };
 };
 
-/* Pin Control Configuration - XIAO BLE SPI0 Configuration */
+/* Pin Control Configuration - nRF52832 SPI0 Configuration */
 &pinctrl {
-    /* SPI0 Default Configuration - XIAO BLE pins */
+    /* SPI0 Default Configuration - nRF52832 pins */
     spi0_default: spi0_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 17)>,    /* P0.27 (SCK) */
-                    <NRF_PSEL(SPIM_MOSI, 0, 16)>,   /* P0.26 (MOSI) */
-                    <NRF_PSEL(SPIM_MISO, 0, 15)>;   /* P0.25 (MISO) */
+            psels = <NRF_PSEL(SPIM_SCK, 0, 17)>,    /* P0.17 (SCK) */
+                    <NRF_PSEL(SPIM_MOSI, 0, 16)>,   /* P0.16 (MOSI) */
+                    <NRF_PSEL(SPIM_MISO, 0, 15)>;   /* P0.15 (MISO) */
         };
     };
 
-    /* SPI0 Sleep Configuration - XIAO BLE pins */
+    /* SPI0 Sleep Configuration - nRF52832 pins */
     spi0_sleep: spi0_sleep {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK, 0, 17)>,

@@ -1,0 +1,115 @@
+/*
+ * Device Tree Overlay for PAM8403 PWM Audio
+ * Replaces I2S with PWM audio output
+ */
+
+/* Disable I2S0 since we're using PWM instead */
+&i2s0 {
+    status = "disabled";
+};
+
+/* Configure PWM0 for left audio channel */
+&pwm0 {
+    status = "okay";
+    pinctrl-0 = <&pwm0_default>;
+    pinctrl-1 = <&pwm0_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+/* Configure PWM1 for right audio channel */
+&pwm1 {
+    status = "okay";
+    pinctrl-0 = <&pwm1_default>;
+    pinctrl-1 = <&pwm1_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+
+
+/* PWM pin configurations */
+&pinctrl {
+    /* Left channel PWM (PWM0) - using A1 pin (P0.03) */
+    pwm0_default: pwm0_default {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 3)>;
+        };
+    };
+    
+    pwm0_sleep: pwm0_sleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 3)>;
+            low-power-enable;
+        };
+    };
+    
+    /* Right channel PWM (PWM1) - using A2 pin (P0.28) */
+    pwm1_default: pwm1_default {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>;
+        };
+    };
+    
+    pwm1_sleep: pwm1_sleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>;
+            low-power-enable;
+        };
+    };
+};
+
+/* PAM8403 control pins */
+&gpio0 {
+    /* Shutdown pin - using A3 pin (P0.29) */
+    pam8403_shutdown: pam8403_shutdown {
+        gpio-hog;
+        gpios = <29 GPIO_ACTIVE_HIGH>;
+        output-low;
+    };
+    
+    /* Gain control pins - using spare GPIO pins */
+    pam8403_gain0: pam8403_gain0 {
+        gpio-hog;
+        gpios = <30 GPIO_ACTIVE_HIGH>;
+        output-low;
+    };
+    
+    pam8403_gain1: pam8403_gain1 {
+        gpio-hog;
+        gpios = <31 GPIO_ACTIVE_HIGH>;
+        output-low;
+    };
+};
+
+/* PAM8403 pin declarations for devicetree access */
+/ {
+    pam8403_shutdown_pin: pam8403-shutdown-pin {
+        compatible = "nordic,gpio-pins";
+        gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+    
+    pam8403_gain0_pin: pam8403-gain0-pin {
+        compatible = "nordic,gpio-pins";
+        gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+    
+    pam8403_gain1_pin: pam8403-gain1-pin {
+        compatible = "nordic,gpio-pins";
+        gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+};
+
+
+
+/* Aliases for easy access */
+/ {
+    aliases {
+        pwm-audio-l = &pwm0;
+        pwm-audio-r = &pwm1;
+        pam8403-shutdown = &pam8403_shutdown;
+        pam8403-gain0 = &pam8403_gain0;
+        pam8403-gain1 = &pam8403_gain1;
+    };
+};
